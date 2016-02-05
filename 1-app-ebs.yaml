@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: population-microservice
+spec:
+  replicas: 1
+  selector:
+    component: pop-micro
+  template:
+    metadata:
+      labels:
+        component: pop-micro
+    spec: 
+     containers: 
+       - image: tutum/mysql
+         name: mysql
+         volumeMounts:
+          - name: mysql-ceph
+            mountPath: /var/lib/mysql
+       - name: nginx-php
+         image: richarvey/nginx-php-fpm:latest
+         ports:
+          - name: web
+            containerPort: 80
+         volumeMounts:
+          - name: local-code
+            mountPath: "/usr/share/nginx/html/test"
+     volumes:
+      - name: local-code
+        hostPath:
+         path: "/opt/app"
+      - name: mysql-ceph
+        awsElasticBlockStore:
+          volumeID: vol-0b7eaad4
+          fsType: ext4
